@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emergency Audio Stream</title>
+
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #121926;
+            --text: #d6e2f0;
+            --muted: #7f8ea3;
+            --start: #1f7a3a;
+            --stop: #a11f2b;
+            --border: #223044;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            height: 100vh;
+        }
+
+        .panel {
+            width: 320px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .title {
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+            color: white;
+        }
+
+        #start {
+            background: var(--start);
+        }
+
+        #stop {
+            background: var(--stop);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .indicator {
+            margin-top: 14px;
+            height: 10px;
+            border-radius: 6px;
+            background: #1a2333;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .indicator>div {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #1f7a3a, #2bd46d);
+            transition: width 0.2s linear;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel">
+        <div class="title">Live Audio Capture</div>
+        <div class="status" id="status">Idle</div>
+
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="stop" disabled>Stop</button>
+        </div>
+
+        <div class="indicator">
+            <div id="level"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+
+</html>
