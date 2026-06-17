@@ -2,164 +2,209 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Emergency Audio Stream</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emergency Audio Stream</title>
 
-  <style>
-    :root {
-      --bg: #0b0f14;
-      --panel: #121926;
-      --text: #d6e2f0;
-      --muted: #7f8ea3;
-      --start: #1f7a3a;
-      --stop: #a11f2b;
-      --border: #223044;
-      --record: #ff2d2d;
-    }
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #121926;
+            --text: #d6e2f0;
+            --muted: #7f8ea3;
+            --start: #1f7a3a;
+            --stop: #a11f2b;
+            --border: #223044;
+            --record: #ff2d2d;
+        }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: grid;
-      place-items: center;
-      height: 100vh;
-    }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            height: 100vh;
+        }
 
-    .panel {
-      width: 320px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
+        .panel {
+            width: 320px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
 
-    .title {
-      font-size: 14px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
+        .title {
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
 
-    .mic {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
+        .mic {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-    .mic-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #1a2333;
-      border: 1px solid var(--border);
-      transition: 0.2s ease;
-    }
+        .mic-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #1a2333;
+            border: 1px solid var(--border);
+            transition: 0.2s ease;
+        }
 
-    .mic-icon.recording {
-      background: rgba(255, 45, 45, 0.15);
-      border-color: var(--record);
-      box-shadow: 0 0 0 4px rgba(255, 45, 45, 0.08);
-    }
+        .mic-icon.recording {
+            background: rgba(255, 45, 45, 0.15);
+            border-color: var(--record);
+            box-shadow: 0 0 0 4px rgba(255, 45, 45, 0.08);
+        }
 
-    .mic-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--muted);
-      transition: 0.2s ease;
-    }
+        .mic-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--muted);
+            transition: 0.2s ease;
+        }
 
-    .mic-icon.recording .mic-dot {
-      background: var(--record);
-      animation: pulse 1s infinite;
-    }
+        .mic-icon.recording .mic-dot {
+            background: var(--record);
+            animation: pulse 1s infinite;
+        }
 
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.6; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
 
-    .status {
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-    }
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
 
-    .duration {
-      font-size: 12px;
-      color: var(--text);
-      opacity: 0.85;
-      text-align: center;
-      margin-bottom: 16px;
-      font-variant-numeric: tabular-nums;
-    }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
 
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+        .status {
+            font-size: 13px;
+            color: var(--muted);
+            text-align: center;
+        }
 
-    button {
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s ease;
-      color: white;
-    }
+        .duration {
+            font-size: 12px;
+            color: var(--text);
+            opacity: 0.85;
+            text-align: center;
+            margin-bottom: 16px;
+            font-variant-numeric: tabular-nums;
+        }
 
-    #start {
-      background: var(--start);
-    }
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-    #stop {
-      background: var(--stop);
-    }
+        button {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+            color: white;
+        }
 
-    button:active {
-      transform: scale(0.98);
-    }
+        #start {
+            background: var(--start);
+        }
 
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-  </style>
+        #stop {
+            background: var(--stop);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .latest {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .latest-title {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .download-link {
+            font-size: 13px;
+            color: #4ea1ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .download-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="panel">
-    <div class="title">Live Audio Capture</div>
+    <div class="panel">
+        <div class="title">Live Audio Capture</div>
 
-    <div class="mic">
-      <div id="mic" class="mic-icon">
-        <div class="mic-dot"></div>
-      </div>
+        <div class="mic">
+            <div id="mic" class="mic-icon">
+                <div class="mic-dot"></div>
+            </div>
 
-      <div class="status" id="status">Idle</div>
-      <div class="duration" id="duration">00:00</div>
+            <div class="status" id="status">Idle</div>
+            <div class="duration" id="duration">00:00</div>
+        </div>
+
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="stop" disabled>Stop</button>
+        </div>
+
+        <div class="latest">
+            <div class="latest-title">Latest recording</div>
+            <a class="download-link" href="http://localhost:5000/download" target="_blank" rel="noopener">
+                Download most recent file
+            </a>
+        </div>
     </div>
 
-    <div class="buttons">
-      <button id="start">Start</button>
-      <button id="stop" disabled>Stop</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script src="./app.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="./app.js"></script>
 </body>
 
 </html>
