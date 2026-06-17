@@ -1,8 +1,8 @@
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import ffmpegPath from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { Server } from 'socket.io';
-import ffmpegPath from 'ffmpeg-static';
 import { STREAM_DIR } from './constants';
 
 export function setupSocketIo(server: any) {
@@ -22,33 +22,23 @@ export function setupSocketIo(server: any) {
     console.log('connection', Date.now());
 
     function closeStream() {
-      if (closed) {
-        return;
-      }
+      if (closed) return;
 
       closed = true;
 
-      console.log('closeStream', Date.now());
+      ffmpeg?.stdin.end();
 
-      if (ffmpeg) {
-        ffmpeg.stdin.end();
-      }
-
-      if (fileStream) {
-        fileStream.end();
-      }
-
-      ffmpeg = null;
-      fileStream = null;
+      ffmpeg?.once('close', () => {
+        fileStream?.end();
+        fileStream = null;
+        ffmpeg = null;
+      });
     }
 
     socket.on('start', (id: string) => {
       console.log('start', Date.now());
 
-      const outputPath = path.join(
-        STREAM_DIR,
-        `${id}.wav`
-      );
+      const outputPath = path.join(STREAM_DIR, `${id}.wav`);
 
       fileStream = fs.createWriteStream(outputPath);
 
@@ -69,6 +59,10 @@ export function setupSocketIo(server: any) {
       ]);
 
       ffmpeg.stdout.pipe(fileStream);
+
+      ffmpeg.stdout.on('data', (chunk) => {
+        console.log('decoded', chunk.length);
+      });
 
       ffmpeg.stderr.on('data', (data) => {
         console.error(data.toString());
