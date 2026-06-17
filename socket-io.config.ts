@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { Server } from 'socket.io';
+import ffmpegPath from 'ffmpeg-static';
 import { STREAM_DIR } from './constants';
 
 export function setupSocketIo(server: any) {
@@ -13,37 +15,82 @@ export function setupSocketIo(server: any) {
   }
 
   io.on('connection', (socket) => {
+    let ffmpeg: ChildProcessWithoutNullStreams | null = null;
     let fileStream: fs.WriteStream | null = null;
     let closed = false;
+
     console.log('connection', Date.now());
 
     function closeStream() {
-      console.log('closeStream', Date.now());
-      if (closed) return;
+      if (closed) {
+        return;
+      }
+
       closed = true;
+
+      console.log('closeStream', Date.now());
+
+      if (ffmpeg) {
+        ffmpeg.stdin.end();
+      }
 
       if (fileStream) {
         fileStream.end();
-        fileStream = null;
       }
+
+      ffmpeg = null;
+      fileStream = null;
     }
 
     socket.on('start', (id: string) => {
       console.log('start', Date.now());
-      const filePath = path.join(STREAM_DIR, `${id}.webm`);
 
-      fileStream = fs.createWriteStream(filePath, {
-        flags: 'w',
+      const outputPath = path.join(
+        STREAM_DIR,
+        `${id}.wav`
+      );
+
+      fileStream = fs.createWriteStream(outputPath);
+
+      ffmpeg = spawn(ffmpegPath!, [
+        '-loglevel',
+        'error',
+
+        '-f',
+        'webm',
+
+        '-i',
+        'pipe:0',
+
+        '-f',
+        'wav',
+
+        'pipe:1',
+      ]);
+
+      ffmpeg.stdout.pipe(fileStream);
+
+      ffmpeg.stderr.on('data', (data) => {
+        console.error(data.toString());
+      });
+
+      ffmpeg.on('error', (err) => {
+        console.error('ffmpeg error', err);
+      });
+
+      ffmpeg.on('close', (code) => {
+        console.log('ffmpeg exited', code);
       });
 
       closed = false;
     });
 
     socket.on('audio-chunk', (chunk: ArrayBuffer) => {
-      console.log('audio-chunk', Date.now());
-      if (!fileStream || closed) return;
+      if (!ffmpeg || closed) {
+        return;
+      }
 
-      fileStream.write(Buffer.from(chunk));
+      ffmpeg.stdin.write(Buffer.from(chunk));
     });
 
     socket.on('stop', () => {
