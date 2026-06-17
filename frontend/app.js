@@ -88,8 +88,7 @@ async function startRecording() {
     };
 
     recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
-      socket.emit('final-audio', blob);
+      socket.emit('stop');
     };
 
     recorder.start(1000);
@@ -104,7 +103,6 @@ function stopRecording() {
   if (!recorder) return;
 
   recorder.stop();
-  socket.emit('stop');
 
   if (stream) {
     stream.getTracks().forEach((t) => t.stop());

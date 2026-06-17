@@ -60,21 +60,17 @@ export function setupSocketIo(server: any) {
 
       ffmpeg.stdout.pipe(fileStream);
 
-      ffmpeg.stdout.on('data', (chunk) => {
-        console.log('decoded', chunk.length);
-      });
+      //   ffmpeg.stderr.on('data', (data) => {
+      //     console.error(data.toString());
+      //   });
 
-      ffmpeg.stderr.on('data', (data) => {
-        console.error(data.toString());
-      });
+      //   ffmpeg.on('error', (err) => {
+      //     console.error('ffmpeg error', err);
+      //   });
 
-      ffmpeg.on('error', (err) => {
-        console.error('ffmpeg error', err);
-      });
-
-      ffmpeg.on('close', (code) => {
-        console.log('ffmpeg exited', code);
-      });
+      //   ffmpeg.on('close', (code) => {
+      //     console.log('ffmpeg exited', code);
+      //   });
 
       closed = false;
     });
