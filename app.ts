@@ -2,11 +2,13 @@ import axios from 'axios';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
+import fs from 'fs';
 import http from 'http';
 import morgan from 'morgan';
-import { BASE_URL, PORT } from './constants';
-import { setupSwagger } from './swagger.config';
+import path from 'path';
+import { BASE_URL, PORT, STREAM_DIR } from './constants';
 import { setupSocketIo } from './socket-io.config';
+import { setupSwagger } from './swagger.config';
 
 //#region App Setup
 const app = express();
@@ -25,7 +27,53 @@ setupSwagger(app, BASE_URL);
 //#endregion App Setup
 
 //#region Code here
-console.log('Hello world');
+
+// compress and download 'streams' folder
+/**
+ * @swagger
+ * /download:
+ *   get:
+ *     summary: Download all recorded audio files
+ *     description: Returns an object containing demo content
+ *     tags: [Default]
+ *     responses:
+ *       '200':
+ *         description: Successful.
+ *       '400':
+ *         description: Bad request.
+ */
+app.get('/download', (req: Request, res: Response) => {
+  const files = fs
+    .readdirSync(STREAM_DIR)
+    .filter((f) => f.endsWith('.wav') || f.endsWith('.webm'))
+    .map((f) => {
+      const fullPath = path.join(STREAM_DIR, f);
+      return {
+        name: f,
+        path: fullPath,
+        mtime: fs.statSync(fullPath).mtimeMs,
+      };
+    })
+    .sort((a, b) => b.mtime - a.mtime);
+
+  if (files.length === 0) {
+    return res.status(404).send('No recordings found');
+  }
+
+  const latest = files[0];
+
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', `attachment; filename="${latest.name}"`);
+
+  const stream = fs.createReadStream(latest.path);
+
+  stream.pipe(res);
+
+  stream.on('error', () => {
+    res.status(500).end();
+  });
+});
+
 //#endregion
 
 //#region Server Setup
