@@ -1,4 +1,6 @@
-const apiUrl = 'http://localhost:5000';
+// const apiUrl = 'http://localhost:5000';
+const apiUrl = 'https://emergency-audio-recorder-backend.onrender.com';
+
 const socket = io(apiUrl);
 
 let recorder = null;
