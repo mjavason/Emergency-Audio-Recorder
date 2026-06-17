@@ -9,38 +9,51 @@ export function setupSocketIo(server: any) {
   });
 
   if (!fs.existsSync(STREAM_DIR)) {
-    fs.mkdirSync(STREAM_DIR);
+    fs.mkdirSync(STREAM_DIR, { recursive: true });
   }
 
   io.on('connection', (socket) => {
-    let streamId: string | null = null;
     let fileStream: fs.WriteStream | null = null;
+    let closed = false;
+    console.log('connection', Date.now());
 
-    socket.on('start', (id: string) => {
-      streamId = id;
+    function closeStream() {
+      console.log('closeStream', Date.now());
+      if (closed) return;
+      closed = true;
 
-      const filePath = path.join(STREAM_DIR, `${streamId}.webm`);
-      fileStream = fs.createWriteStream(filePath, { flags: 'a' });
-    });
-
-    socket.on('audio-chunk', (chunk: ArrayBuffer) => {
-      if (!fileStream) return;
-
-      const buffer = Buffer.from(chunk);
-      fileStream.write(buffer);
-    });
-
-    socket.on('stop', () => {
       if (fileStream) {
         fileStream.end();
         fileStream = null;
       }
+    }
+
+    socket.on('start', (id: string) => {
+      console.log('start', Date.now());
+      const filePath = path.join(STREAM_DIR, `${id}.webm`);
+
+      fileStream = fs.createWriteStream(filePath, {
+        flags: 'w',
+      });
+
+      closed = false;
+    });
+
+    socket.on('audio-chunk', (chunk: ArrayBuffer) => {
+      console.log('audio-chunk', Date.now());
+      if (!fileStream || closed) return;
+
+      fileStream.write(Buffer.from(chunk));
+    });
+
+    socket.on('stop', () => {
+      console.log('stop', Date.now());
+      closeStream();
     });
 
     socket.on('disconnect', () => {
-      if (fileStream) {
-        fileStream.end();
-      }
+      console.log('disconnect', Date.now());
+      closeStream();
     });
   });
 }
