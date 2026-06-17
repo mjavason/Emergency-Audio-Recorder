@@ -14,6 +14,13 @@ const statusEl = document.getElementById('status');
 const micEl = document.getElementById('mic');
 const durationEl = document.getElementById('duration');
 
+window.addEventListener('DOMContentLoaded', () => {
+  const link = document.getElementById('downloadLink');
+  if (!link) return;
+
+  link.href = `${apiUrl}/download`;
+});
+
 function setStatus(text) {
   statusEl.textContent = text;
 }
