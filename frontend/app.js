@@ -5,26 +5,66 @@ let recorder = null;
 let streamId = crypto.randomUUID();
 let stream = null;
 
+let startTime = null;
+let timerInterval = null;
+
 const startBtn = document.getElementById('start');
 const stopBtn = document.getElementById('stop');
 const statusEl = document.getElementById('status');
-const levelEl = document.getElementById('level');
+const micEl = document.getElementById('mic');
+const durationEl = document.getElementById('duration');
 
 function setStatus(text) {
   statusEl.textContent = text;
 }
 
-function setRecordingUI(isRecording) {
+function setMicRecording(isRecording) {
+  if (isRecording) {
+    micEl.classList.add('recording');
+  } else {
+    micEl.classList.remove('recording');
+  }
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+  const sec = String(totalSec % 60).padStart(2, '0');
+  return `${min}:${sec}`;
+}
+
+function startTimer() {
+  startTime = Date.now();
+
+  timerInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    durationEl.textContent = formatDuration(elapsed);
+  }, 500);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  startTime = null;
+  durationEl.textContent = '00:00';
+}
+
+function setUI(isRecording) {
   startBtn.disabled = isRecording;
   stopBtn.disabled = !isRecording;
 
   if (isRecording) {
     setStatus('Recording');
-    levelEl.style.width = '100%';
+    startTimer();
   } else {
-    setStatus('Idle');
-    levelEl.style.width = '0%';
+    setStatus('');
+    stopTimer();
   }
+
+  setMicRecording(isRecording);
 }
 
 async function startRecording() {
@@ -47,9 +87,14 @@ async function startRecording() {
       }
     };
 
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+      socket.emit('final-audio', blob);
+    };
+
     recorder.start(1000);
 
-    setRecordingUI(true);
+    setUI(true);
   } catch (err) {
     setStatus('Mic access denied');
   }
@@ -61,14 +106,17 @@ function stopRecording() {
   recorder.stop();
   socket.emit('stop');
 
-  stream?.getTracks().forEach((t) => t.stop());
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+  }
+
   stream = null;
   recorder = null;
 
-  setRecordingUI(false);
+  setUI(false);
 }
 
 startBtn.onclick = startRecording;
 stopBtn.onclick = stopRecording;
 
-setRecordingUI(false);
+setUI(false);
